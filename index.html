@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Leaderboard Generator</title><style>
+<title>BGMI Leaderboard</title><style>
 body {
   margin: 0;
   background: #0f172a;
@@ -15,13 +15,12 @@ h1 {
 }
 
 canvas {
-  margin-top: 20px;
+  margin-top: 10px;
   border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
 button {
-  margin-top: 20px;
+  margin-top: 15px;
   padding: 12px 25px;
   background: #22c55e;
   border: none;
@@ -29,21 +28,21 @@ button {
   cursor: pointer;
   font-size: 16px;
 }
-</style></head><body><h1>🏆 Tournament Leaderboard</h1><canvas id="canvas" width="1000" height="600"></canvas>
+</style></head><body><h1>🏆 Overall Standing</h1><canvas id="canvas" width="1080" height="1350"></canvas>
 <br>
 <button onclick="downloadImage()">Download Image</button>
 
 <script>
 
-// 🔗 ADD YOUR GOOGLE SHEET CSV LINK
-const sheetURL = "https://api.allorigins.win/raw?url=https://docs.google.com/spreadsheets/d/1gLTFVhdB88h4Muqh690Dy7U8sAyxQy-Cfz4fpUA1HlQ/edit?usp=drivesdk";
+// 🔗 PUT YOUR GOOGLE SHEET CSV LINK HERE
+const sheetURL = "https://api.allorigins.win/raw?url=YOUR_CSV_LINK_HERE";
 
-// 🖼 BACKGROUND IMAGE (upload in repo)
-const bgImage = "https://cdn.discordapp.com/attachments/1491113430474686495/1491124004910792764/Screenshot_2026-04-07-22-39-02-347_com.instagram.android-edit.jpg?ex=69d68cf2&is=69d53b72&hm=8c6c98f538a6ab1cd1ee15dfa520e6b117bd72d8e4e8c7ebd7774871153cc3af&";
+// 🖼 YOUR IMAGE NAME (upload in repo)
+const bgImage = "bg.jpg";
 
 async function generateImage() {
 
-  const res = await fetch(sheetURL);
+  const res = await fetch(sheetURL + "&t=" + new Date().getTime());
   const text = await res.text();
 
   const rows = text.trim().split("\n").map(r => r.split(","));
@@ -59,47 +58,52 @@ async function generateImage() {
     // draw background
     ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
 
-    // text settings
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 22px Arial";
+    // text style
+    ctx.fillStyle = "#000000";
+    ctx.font = "bold 28px Arial";
 
-    // column positions (EDIT if needed)
+    // 🔥 COLUMN POSITIONS (MATCHED TO YOUR IMAGE)
     const x = {
-      team: 120,
-      wwcd: 550,
-      pp: 650,
-      kp: 750,
-      total: 870
+      rank: 100,
+      team: 180,
+      played: 650,
+      pp: 740,
+      fp: 830,
+      wwcd: 920,
+      tp: 1010
     };
 
-    let startY = 180;
+    let startY = 480;
+    let gap = 45;
 
-    // draw header
-    ctx.fillText("TEAM NAME", x.team, 140);
-    ctx.fillText("WWCD", x.wwcd, 140);
-    ctx.fillText("PP", x.pp, 140);
-    ctx.fillText("KP", x.kp, 140);
-    ctx.fillText("TOTAL", x.total, 140);
+    // draw rows (TOP 20)
+    rows.slice(1, 21).forEach((row, i) => {
 
-    // draw rows
-    rows.slice(1, 11).forEach((row, i) => {
-      const y = startY + (i * 35);
+      const y = startY + (i * gap);
 
+      // rank
+      ctx.fillText("#" + (i + 1), x.rank, y);
+
+      // team name
       ctx.fillText(row[0] || "-", x.team, y);
-      ctx.fillText(row[1] || "-", x.wwcd, y);
-      ctx.fillText(row[2] || "-", x.pp, y);
-      ctx.fillText(row[3] || "-", x.kp, y);
 
-      // highlight total
-      ctx.fillStyle = "#22c55e";
-      ctx.fillText(row[4] || "-", x.total, y);
-      ctx.fillStyle = "#ffffff";
+      // stats
+      ctx.fillText(row[1] || "-", x.played, y);
+      ctx.fillText(row[2] || "-", x.pp, y);
+      ctx.fillText(row[3] || "-", x.fp, y);
+      ctx.fillText(row[4] || "-", x.wwcd, y);
+
+      // highlight TOTAL (TP)
+      ctx.fillStyle = "#14532d";
+      ctx.fillText(row[5] || "-", x.tp, y);
+      ctx.fillStyle = "#000000";
+
     });
 
   };
 }
 
-// download image
+// download
 function downloadImage() {
   const canvas = document.getElementById("canvas");
   const link = document.createElement("a");
@@ -108,11 +112,11 @@ function downloadImage() {
   link.click();
 }
 
-// auto load
+// run
 generateImage();
 
-// auto refresh every 30 sec
-setInterval(generateImage, 30000);
+// auto refresh every 10 sec
+setInterval(generateImage, 10000);
 
 </script></body>
 </html>
