@@ -1,0 +1,118 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Leaderboard Generator</title><style>
+body {
+  margin: 0;
+  background: #0f172a;
+  text-align: center;
+  font-family: Arial;
+  color: white;
+}
+
+h1 {
+  margin: 20px;
+}
+
+canvas {
+  margin-top: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+button {
+  margin-top: 20px;
+  padding: 12px 25px;
+  background: #22c55e;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+</style></head><body><h1>🏆 Tournament Leaderboard</h1><canvas id="canvas" width="1000" height="600"></canvas>
+<br>
+<button onclick="downloadImage()">Download Image</button>
+
+<script>
+
+// 🔗 ADD YOUR GOOGLE SHEET CSV LINK
+const sheetURL = "https://api.allorigins.win/raw?url=YOUR_CSV_LINK_HERE";
+
+// 🖼 BACKGROUND IMAGE (upload in repo)
+const bgImage = "bg.png";
+
+async function generateImage() {
+
+  const res = await fetch(sheetURL);
+  const text = await res.text();
+
+  const rows = text.trim().split("\n").map(r => r.split(","));
+
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+
+  const bg = new Image();
+  bg.src = bgImage;
+
+  bg.onload = () => {
+
+    // draw background
+    ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+
+    // text settings
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 22px Arial";
+
+    // column positions (EDIT if needed)
+    const x = {
+      team: 120,
+      wwcd: 550,
+      pp: 650,
+      kp: 750,
+      total: 870
+    };
+
+    let startY = 180;
+
+    // draw header
+    ctx.fillText("TEAM NAME", x.team, 140);
+    ctx.fillText("WWCD", x.wwcd, 140);
+    ctx.fillText("PP", x.pp, 140);
+    ctx.fillText("KP", x.kp, 140);
+    ctx.fillText("TOTAL", x.total, 140);
+
+    // draw rows
+    rows.slice(1, 11).forEach((row, i) => {
+      const y = startY + (i * 35);
+
+      ctx.fillText(row[0] || "-", x.team, y);
+      ctx.fillText(row[1] || "-", x.wwcd, y);
+      ctx.fillText(row[2] || "-", x.pp, y);
+      ctx.fillText(row[3] || "-", x.kp, y);
+
+      // highlight total
+      ctx.fillStyle = "#22c55e";
+      ctx.fillText(row[4] || "-", x.total, y);
+      ctx.fillStyle = "#ffffff";
+    });
+
+  };
+}
+
+// download image
+function downloadImage() {
+  const canvas = document.getElementById("canvas");
+  const link = document.createElement("a");
+  link.download = "leaderboard.png";
+  link.href = canvas.toDataURL();
+  link.click();
+}
+
+// auto load
+generateImage();
+
+// auto refresh every 30 sec
+setInterval(generateImage, 30000);
+
+</script></body>
+</html>
